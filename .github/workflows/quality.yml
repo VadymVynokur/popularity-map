@@ -1,0 +1,111 @@
+name: quality
+
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches:
+      - dev
+      - main
+      - "feat/**"
+      - "fix/**"
+      - "refactor/**"
+      - "perf/**"
+      - "style/**"
+      - "test/**"
+      - "docs/**"
+      - "build/**"
+      - "ops/**"
+      - "chore/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: popularity_map
+          POSTGRES_USER: popularity_map
+          POSTGRES_PASSWORD: popularity_map
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U popularity_map -d popularity_map"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      redis:
+        image: redis:8.4-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings.test
+      DJANGO_SECRET_KEY: ci-only-not-a-production-secret
+      POSTGRES_DB: popularity_map
+      POSTGRES_USER: popularity_map
+      POSTGRES_PASSWORD: popularity_map
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      TEST_REDIS_CACHE_URL: redis://localhost:6379/15
+      TEST_REDIS_VIEW_COOLDOWN_URL: redis://localhost:6379/14
+      TEST_CELERY_BROKER_URL: redis://localhost:6379/13
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Install locked dependencies
+        run: uv sync --locked
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Run Django checks
+        run: uv run python manage.py check
+
+      - name: Check for migration drift
+        run: uv run python manage.py makemigrations --check --dry-run
+
+      - name: Apply migrations
+        run: uv run python manage.py migrate
+
+      - name: Run tests
+        run: uv run pytest
+
+      - name: Validate pull request commit messages
+        if: github.event_name == 'pull_request'
+        run: uv run python scripts/validate_commits.py --range "origin/${{ github.base_ref }}..HEAD"
+
+      - name: Validate pushed commit messages
+        if: github.event_name == 'push'
+        run: uv run python scripts/validate_commits.py --range "${{ github.event.before }}..${{ github.sha }}"
