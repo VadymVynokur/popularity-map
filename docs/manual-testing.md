@@ -186,7 +186,7 @@ curl -s -b cookies.txt -c cookies.txt \
 - `GET /api/v1/categories/` — 12 seed-категорій.
 - `POST /api/v1/categories/` як admin — `201`.
 - `POST /api/v1/categories/` як звичайний користувач — `403`.
-- `DELETE /api/v1/categories/{id-Cafe}/` — `409 category_in_use`, бо `9101`
+- `DELETE /api/v1/categories/{Cafe ID}/` — `409 category_in_use`, бо `9101`
   використовує Cafe.
 - Створіть нову категорію як admin і видаліть її — `204`.
 
