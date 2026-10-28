@@ -1,8 +1,10 @@
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
 from django.conf import settings
 from django.core.management import call_command
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -21,7 +23,8 @@ def test_manual_testing_fixture_loads_and_covers_key_scenarios(api_client):
 
     assert User.objects.filter(pk__in=range(9001, 9008)).count() == 7
     assert User.objects.get(pk=9001).role == User.Role.ADMIN
-    assert User.objects.get(pk=9002).check_password("ManualTest123!")
+    with override_settings(PASSWORD_HASHERS=["django.contrib.auth.hashers.PBKDF2PasswordHasher"]):
+        assert User.objects.get(pk=9002).check_password("ManualTest123!")
     assert not User.objects.get(pk=9005).email_verified
     assert not User.objects.get(pk=9007).is_active
 
@@ -40,7 +43,7 @@ def test_manual_testing_fixture_loads_and_covers_key_scenarios(api_client):
     assert response.data["count"] == 1
     row = response.data["results"][0]
     assert row["id"] == 9101
-    assert row["rating"] == 4.7
+    assert row["rating"] == Decimal("4.7")
     assert row["review_count"] == 3
     assert row["views_7d"] == 0
     assert row["popularity"] == pytest.approx(53.92, abs=0.01)
