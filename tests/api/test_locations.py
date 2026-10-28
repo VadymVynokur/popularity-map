@@ -28,6 +28,29 @@ def _payload(**overrides):
     return data
 
 
+def _bbox_location(
+    *,
+    name: str,
+    latitude: str,
+    longitude: str,
+    author,
+    category_name: str = "Cafe",
+    description: str = "Bounding box test location.",
+    **overrides,
+) -> Location:
+    location = Location.objects.create(
+        name=name,
+        description=description,
+        address="1 BBox Street",
+        latitude=Decimal(latitude),
+        longitude=Decimal(longitude),
+        created_by=author,
+        **overrides,
+    )
+    location.categories.set([Category.objects.get(name=category_name)])
+    return location
+
+
 @pytest.mark.django_db
 def test_anonymous_cannot_create_location(api_client):
     response = api_client.post(reverse("location-list"), _payload(), format="json")
@@ -349,6 +372,323 @@ def test_author_and_rating_filters(api_client, location, verified_user):
 
     no_rating = api_client.get(reverse("location-list"), {"rating_max": 5})
     assert [item["id"] for item in no_rating.data["results"]] == [location.pk]
+
+
+@pytest.mark.django_db
+def test_bbox_returns_locations_inside_and_on_boundary(api_client, location, verified_user):
+    inside = _bbox_location(
+        name="BBox Inside",
+        latitude="50.500000",
+        longitude="30.600000",
+        author=verified_user,
+    )
+    outside = _bbox_location(
+        name="BBox Outside",
+        latitude="50.700000",
+        longitude="30.900000",
+        author=verified_user,
+    )
+    west = _bbox_location(
+        name="BBox West Edge",
+        latitude="50.500000",
+        longitude="30.400000",
+        author=verified_user,
+    )
+    east = _bbox_location(
+        name="BBox East Edge",
+        latitude="50.500000",
+        longitude="30.700000",
+        author=verified_user,
+    )
+    south = _bbox_location(
+        name="BBox South Edge",
+        latitude="50.400000",
+        longitude="30.600000",
+        author=verified_user,
+    )
+    north = _bbox_location(
+        name="BBox North Edge",
+        latitude="50.600000",
+        longitude="30.600000",
+        author=verified_user,
+    )
+
+    response = api_client.get(
+        reverse("location-list"),
+        {"bbox": "30.40,50.40,30.70,50.60"},
+    )
+
+    assert response.status_code == 200
+    ids = {item["id"] for item in response.data["results"]}
+    assert ids == {location.pk, inside.pk, west.pk, east.pk, south.pk, north.pk}
+    assert outside.pk not in ids
+
+
+@pytest.mark.django_db
+def test_bbox_absent_keeps_existing_list_behavior(api_client, location, verified_user):
+    outside = _bbox_location(
+        name="BBox Outside",
+        latitude="10.000000",
+        longitude="10.000000",
+        author=verified_user,
+    )
+
+    response = api_client.get(reverse("location-list"))
+
+    assert response.status_code == 200
+    assert {item["id"] for item in response.data["results"]} == {location.pk, outside.pk}
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "bbox",
+    [
+        "30.40,50.40,30.70",
+        "30.40,50.40,30.70,50.60,50.70",
+        "",
+    ],
+)
+def test_bbox_requires_exactly_four_values(api_client, location, bbox):
+    response = api_client.get(reverse("location-list"), {"bbox": bbox})
+
+    assert response.status_code == 400
+    assert response.data["error"]["code"] == "validation_error"
+    assert "bbox" in response.data["error"]["details"]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "bbox",
+    [
+        "30.40,abc,30.70,50.60",
+        "30.40,,30.70,50.60",
+        "NaN,50.40,30.70,50.60",
+        "30.40,Infinity,30.70,50.60",
+    ],
+)
+def test_bbox_rejects_non_numeric_or_non_finite_values(api_client, location, bbox):
+    response = api_client.get(reverse("location-list"), {"bbox": bbox})
+
+    assert response.status_code == 400
+    assert response.data["error"]["code"] == "validation_error"
+    assert "bbox" in response.data["error"]["details"]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "bbox",
+    [
+        "-180.000001,50.40,30.70,50.60",
+        "30.40,50.40,180.000001,50.60",
+        "30.40,-90.000001,30.70,50.60",
+        "30.40,50.40,30.70,90.000001",
+    ],
+)
+def test_bbox_rejects_out_of_range_coordinates(api_client, location, bbox):
+    response = api_client.get(reverse("location-list"), {"bbox": bbox})
+
+    assert response.status_code == 400
+    assert response.data["error"]["code"] == "validation_error"
+    assert "bbox" in response.data["error"]["details"]
+
+
+@pytest.mark.django_db
+def test_bbox_accepts_full_coordinate_range(api_client, location):
+    response = api_client.get(reverse("location-list"), {"bbox": "-180,-90,180,90"})
+
+    assert response.status_code == 200
+    assert location.pk in {item["id"] for item in response.data["results"]}
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "bbox",
+    [
+        "30.70,50.40,30.40,50.60",
+        "30.40,50.60,30.70,50.40",
+        "30.40,50.40,30.40,50.60",
+        "30.40,50.40,30.70,50.40",
+    ],
+)
+def test_bbox_rejects_invalid_geometry(api_client, location, bbox):
+    response = api_client.get(reverse("location-list"), {"bbox": bbox})
+
+    assert response.status_code == 400
+    assert response.data["error"]["code"] == "validation_error"
+    assert "bbox" in response.data["error"]["details"]
+
+
+@pytest.mark.django_db
+def test_bbox_combines_with_search_category_author_and_soft_delete(
+    api_client, location, verified_user
+):
+    other = User.objects.create_user(
+        email="bbox-other@example.com",
+        username="bbox_other",
+        password="a-strong-password",
+    )
+    inside_cafe = _bbox_location(
+        name="BBox Inside Cafe",
+        latitude="50.500000",
+        longitude="30.600000",
+        author=verified_user,
+        description="BBox searchable cafe.",
+    )
+    inside_park = _bbox_location(
+        name="BBox Inside Park",
+        latitude="50.450000",
+        longitude="30.550000",
+        author=other,
+        category_name="Park",
+        description="BBox searchable park.",
+    )
+    outside_cafe = _bbox_location(
+        name="BBox Outside Cafe",
+        latitude="50.700000",
+        longitude="30.900000",
+        author=verified_user,
+        description="BBox searchable outside.",
+    )
+    deleted_inside = _bbox_location(
+        name="BBox Deleted Cafe",
+        latitude="50.500000",
+        longitude="30.600000",
+        author=verified_user,
+        description="BBox searchable deleted.",
+    )
+    soft_delete_location(deleted_inside)
+    Review.objects.create(location=inside_cafe, author=verified_user, rating=5, comment="Great")
+    Review.objects.create(location=outside_cafe, author=verified_user, rating=5, comment="Great")
+    bbox = "30.40,50.40,30.70,50.60"
+
+    search = api_client.get(reverse("location-list"), {"bbox": bbox, "search": "searchable"})
+    assert search.status_code == 200
+    assert {item["id"] for item in search.data["results"]} == {
+        inside_cafe.pk,
+        inside_park.pk,
+    }
+
+    category = api_client.get(reverse("location-list"), {"bbox": bbox, "category": "Park"})
+    assert category.status_code == 200
+    assert {item["id"] for item in category.data["results"]} == {inside_park.pk}
+
+    author = api_client.get(
+        reverse("location-list"),
+        {"bbox": bbox, "author": other.username},
+    )
+    assert author.status_code == 200
+    assert {item["id"] for item in author.data["results"]} == {inside_park.pk}
+
+    owner_cafes = api_client.get(
+        reverse("location-list"),
+        {"bbox": bbox, "author": verified_user.username, "category": "Cafe"},
+    )
+    assert owner_cafes.status_code == 200
+    assert {item["id"] for item in owner_cafes.data["results"]} == {
+        location.pk,
+        inside_cafe.pk,
+    }
+
+
+@pytest.mark.django_db
+def test_bbox_combines_with_rating_popularity_and_ordering(api_client, location, verified_user):
+    inside_cafe = _bbox_location(
+        name="BBox Inside Cafe",
+        latitude="50.500000",
+        longitude="30.600000",
+        author=verified_user,
+    )
+    inside_park = _bbox_location(
+        name="BBox Inside Park",
+        latitude="50.450000",
+        longitude="30.550000",
+        author=verified_user,
+        category_name="Park",
+    )
+    outside_cafe = _bbox_location(
+        name="BBox Outside Cafe",
+        latitude="50.700000",
+        longitude="30.900000",
+        author=verified_user,
+    )
+    Review.objects.create(location=inside_cafe, author=verified_user, rating=5, comment="Great")
+    Review.objects.create(location=outside_cafe, author=verified_user, rating=5, comment="Great")
+    bbox = "30.40,50.40,30.70,50.60"
+
+    by_rating = api_client.get(reverse("location-list"), {"bbox": bbox, "rating_min": 4})
+    assert by_rating.status_code == 200
+    assert {item["id"] for item in by_rating.data["results"]} == {inside_cafe.pk}
+
+    by_popularity = api_client.get(
+        reverse("location-list"),
+        {"bbox": bbox, "popularity_min": 50},
+    )
+    assert by_popularity.status_code == 200
+    assert {item["id"] for item in by_popularity.data["results"]} == {inside_cafe.pk}
+
+    ordered = api_client.get(reverse("location-list"), {"bbox": bbox, "ordering": "rating"})
+    assert ordered.status_code == 200
+    assert ordered.data["results"][0]["id"] == inside_cafe.pk
+    assert all(item["rating"] is None for item in ordered.data["results"][1:])
+    assert inside_park.pk in {item["id"] for item in ordered.data["results"]}
+
+
+@pytest.mark.django_db
+def test_bbox_combines_with_pagination(api_client, location, verified_user):
+    for index in range(3):
+        _bbox_location(
+            name=f"BBox Page {index}",
+            latitude="50.500000",
+            longitude=f"30.60{index}000",
+            author=verified_user,
+        )
+    outside = _bbox_location(
+        name="BBox Page Outside",
+        latitude="10.000000",
+        longitude="10.000000",
+        author=verified_user,
+    )
+    bbox = "30.40,50.40,30.70,50.60"
+
+    first_page = api_client.get(
+        reverse("location-list"),
+        {"bbox": bbox, "page_size": 2},
+    )
+    assert first_page.status_code == 200
+    assert first_page.data["count"] == 4
+    assert len(first_page.data["results"]) == 2
+    assert first_page.data["next"] is not None
+    assert outside.pk not in {item["id"] for item in first_page.data["results"]}
+
+    second_page = api_client.get(
+        reverse("location-list"),
+        {"bbox": bbox, "page_size": 2, "page": 2},
+    )
+    assert second_page.status_code == 200
+    assert second_page.data["count"] == 4
+    assert len(second_page.data["results"]) == 2
+    assert second_page.data["previous"] is not None
+
+
+@pytest.mark.django_db
+def test_bbox_excludes_soft_deleted_locations(api_client, location, verified_user):
+    deleted = _bbox_location(
+        name="BBox Deleted",
+        latitude="50.500000",
+        longitude="30.600000",
+        author=verified_user,
+    )
+    soft_delete_location(deleted)
+
+    response = api_client.get(
+        reverse("location-list"),
+        {"bbox": "30.40,50.40,30.70,50.60"},
+    )
+
+    assert response.status_code == 200
+    ids = {item["id"] for item in response.data["results"]}
+    assert deleted.pk not in ids
+    assert location.pk in ids
 
 
 @pytest.mark.django_db

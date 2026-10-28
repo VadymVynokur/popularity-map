@@ -35,9 +35,18 @@ def test_schema_and_swagger_are_available_when_enabled(api_client):
         "category",
         "author",
         "rating_min",
+        "bbox",
         "ordering",
         "page_size",
     } <= parameter_names
+
+    bbox_parameter = next(
+        parameter for parameter in location_list["parameters"] if parameter["name"] == "bbox"
+    )
+    assert bbox_parameter["in"] == "query"
+    assert "west,south,east,north" in bbox_parameter["description"]
+    assert "30.40,50.40,30.70,50.60" in bbox_parameter["description"]
+    assert "400" in bbox_parameter["description"]
 
 
 @pytest.mark.django_db
