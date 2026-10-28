@@ -155,6 +155,17 @@ Generate the OpenAPI schema locally:
 uv run python manage.py spectacular --file schema.yaml
 ```
 
+## Manual testing data
+
+Load the prepared local dataset and follow the manual testing guide:
+
+```bash
+uv run python manage.py loaddata fixtures/manual_testing.json
+```
+
+See [docs/manual-testing.md](docs/manual-testing.md) for credentials, dataset
+details, expected metrics, and end-to-end scenarios.
+
 `uv.lock` is committed and CI installs with `uv sync --locked`.
 
 ## Git workflow
