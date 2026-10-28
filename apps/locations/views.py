@@ -2,7 +2,12 @@ import logging
 
 from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
+from drf_spectacular.utils import (
+    OpenApiExample,
+    OpenApiParameter,
+    OpenApiResponse,
+    extend_schema,
+)
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -49,6 +54,19 @@ LOCATION_FILTER_PARAMETERS = [
         OpenApiTypes.STR,
         OpenApiParameter.QUERY,
         description="Author username, case-insensitive exact match.",
+    ),
+    OpenApiParameter(
+        "bbox",
+        OpenApiTypes.STR,
+        OpenApiParameter.QUERY,
+        description=(
+            "Optional bounding box as exactly four comma-separated numbers in "
+            "west,south,east,north order (longitude, latitude). Coordinates are inclusive. "
+            "Longitudes must be within -180..180, latitudes within -90..90, with "
+            "west < east and south < north. Example: 30.40,50.40,30.70,50.60. "
+            "Invalid values return HTTP 400 validation_error."
+        ),
+        examples=[OpenApiExample("Kyiv center", value="30.40,50.40,30.70,50.60")],
     ),
     OpenApiParameter("rating_min", OpenApiTypes.NUMBER, OpenApiParameter.QUERY),
     OpenApiParameter("rating_max", OpenApiTypes.NUMBER, OpenApiParameter.QUERY),

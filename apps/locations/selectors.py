@@ -123,12 +123,50 @@ def _parse_bound(
     return value
 
 
+def _parse_bbox(params) -> tuple[Decimal, Decimal, Decimal, Decimal] | None:
+    raw = params.get("bbox")
+    if raw is None:
+        return None
+
+    parts = [part.strip() for part in raw.split(",")]
+    if len(parts) != 4:
+        raise ValidationError({"bbox": ["bbox must contain exactly four comma-separated numbers."]})
+
+    try:
+        west, south, east, north = (Decimal(part) for part in parts)
+    except (InvalidOperation, ValueError):
+        raise ValidationError({"bbox": ["bbox values must be valid numbers."]}) from None
+
+    if not all(value.is_finite() for value in (west, south, east, north)):
+        raise ValidationError({"bbox": ["bbox values must be finite numbers."]})
+
+    if not (-180 <= west <= 180 and -180 <= east <= 180):
+        raise ValidationError({"bbox": ["bbox longitudes must be between -180 and 180."]})
+    if not (-90 <= south <= 90 and -90 <= north <= 90):
+        raise ValidationError({"bbox": ["bbox latitudes must be between -90 and 90."]})
+
+    if west >= east or south >= north:
+        raise ValidationError({"bbox": ["bbox requires west < east and south < north."]})
+
+    return west, south, east, north
+
+
 def apply_filters(queryset, params):
     search = (params.get("search") or "").strip()
     if search:
         if len(search) > 100:
             raise ValidationError({"search": ["Search text must be at most 100 characters."]})
         queryset = queryset.filter(Q(name__icontains=search) | Q(description__icontains=search))
+
+    bbox = _parse_bbox(params)
+    if bbox is not None:
+        west, south, east, north = bbox
+        queryset = queryset.filter(
+            latitude__gte=south,
+            latitude__lte=north,
+            longitude__gte=west,
+            longitude__lte=east,
+        )
 
     categories = [value for value in params.getlist("category") if value]
     if categories:
