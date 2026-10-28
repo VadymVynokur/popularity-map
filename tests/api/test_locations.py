@@ -388,6 +388,18 @@ def test_bbox_returns_locations_inside_and_on_boundary(api_client, location, ver
         longitude="30.900000",
         author=verified_user,
     )
+    outside_latitude = _bbox_location(
+        name="BBox Outside Latitude",
+        latitude="50.700000",
+        longitude="30.600000",
+        author=verified_user,
+    )
+    outside_longitude = _bbox_location(
+        name="BBox Outside Longitude",
+        latitude="50.500000",
+        longitude="30.900000",
+        author=verified_user,
+    )
     west = _bbox_location(
         name="BBox West Edge",
         latitude="50.500000",
@@ -422,6 +434,8 @@ def test_bbox_returns_locations_inside_and_on_boundary(api_client, location, ver
     ids = {item["id"] for item in response.data["results"]}
     assert ids == {location.pk, inside.pk, west.pk, east.pk, south.pk, north.pk}
     assert outside.pk not in ids
+    assert outside_latitude.pk not in ids
+    assert outside_longitude.pk not in ids
 
 
 @pytest.mark.django_db
