@@ -1,0 +1,399 @@
+[
+  {
+    "model": "accounts.user",
+    "pk": 9001,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$o5Eyw652zTMrxShmkcer5d$wfqP8fuS41SEuBqNfeaDQfcWG3B9cERdODSOw3zKRZk=",
+      "last_login": null,
+      "is_superuser": true,
+      "username": "manual_admin",
+      "first_name": "",
+      "last_name": "",
+      "email": "admin@manual.test",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2026-09-01T09:00:00Z",
+      "role": "admin",
+      "email_verified": true
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 9002,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$o5Eyw652zTMrxShmkcer5d$wfqP8fuS41SEuBqNfeaDQfcWG3B9cERdODSOw3zKRZk=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "manual_owner",
+      "first_name": "",
+      "last_name": "",
+      "email": "owner@manual.test",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-09-01T09:00:00Z",
+      "role": "user",
+      "email_verified": true
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 9003,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$o5Eyw652zTMrxShmkcer5d$wfqP8fuS41SEuBqNfeaDQfcWG3B9cERdODSOw3zKRZk=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "manual_reviewer",
+      "first_name": "",
+      "last_name": "",
+      "email": "reviewer@manual.test",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-09-01T09:00:00Z",
+      "role": "user",
+      "email_verified": true
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 9004,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$o5Eyw652zTMrxShmkcer5d$wfqP8fuS41SEuBqNfeaDQfcWG3B9cERdODSOw3zKRZk=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "manual_subscriber",
+      "first_name": "",
+      "last_name": "",
+      "email": "subscriber@manual.test",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-09-01T09:00:00Z",
+      "role": "user",
+      "email_verified": true
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 9005,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$o5Eyw652zTMrxShmkcer5d$wfqP8fuS41SEuBqNfeaDQfcWG3B9cERdODSOw3zKRZk=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "manual_unverified",
+      "first_name": "",
+      "last_name": "",
+      "email": "unverified@manual.test",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-09-01T09:00:00Z",
+      "role": "user",
+      "email_verified": false
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 9006,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$o5Eyw652zTMrxShmkcer5d$wfqP8fuS41SEuBqNfeaDQfcWG3B9cERdODSOw3zKRZk=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "manual_other",
+      "first_name": "",
+      "last_name": "",
+      "email": "other@manual.test",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2026-09-01T09:00:00Z",
+      "role": "user",
+      "email_verified": true
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 9007,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$o5Eyw652zTMrxShmkcer5d$wfqP8fuS41SEuBqNfeaDQfcWG3B9cERdODSOw3zKRZk=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "manual_inactive",
+      "first_name": "",
+      "last_name": "",
+      "email": "inactive@manual.test",
+      "is_staff": false,
+      "is_active": false,
+      "date_joined": "2026-09-01T09:00:00Z",
+      "role": "user",
+      "email_verified": true
+    }
+  },
+  {
+    "model": "locations.location",
+    "pk": 9101,
+    "fields": {
+      "name": "Manual Riverside Cafe",
+      "description": "A riverside cafe with a terrace, used for manual API testing.",
+      "categories": [
+        1,
+        9
+      ],
+      "address": "12 River Street, Kyiv",
+      "latitude": "50.450100",
+      "longitude": "30.523400",
+      "created_by": 9002,
+      "created_at": "2026-10-01T09:00:00Z",
+      "updated_at": "2026-10-01T09:00:00Z",
+      "deleted_at": null
+    }
+  },
+  {
+    "model": "locations.location",
+    "pk": 9102,
+    "fields": {
+      "name": "Manual Central Park",
+      "description": "A city park with walking paths.",
+      "categories": [
+        5,
+        9
+      ],
+      "address": "1 Park Avenue, Kyiv",
+      "latitude": "50.448000",
+      "longitude": "30.521000",
+      "created_by": 9006,
+      "created_at": "2026-10-02T09:00:00Z",
+      "updated_at": "2026-10-02T09:00:00Z",
+      "deleted_at": null
+    }
+  },
+  {
+    "model": "locations.location",
+    "pk": 9103,
+    "fields": {
+      "name": "Manual Hidden Bar",
+      "description": "A small bar that is soft-deleted in the fixture.",
+      "categories": [
+        3
+      ],
+      "address": "7 Secret Lane, Kyiv",
+      "latitude": "50.452000",
+      "longitude": "30.517000",
+      "created_by": 9002,
+      "created_at": "2026-10-03T09:00:00Z",
+      "updated_at": "2026-10-25T09:00:00Z",
+      "deleted_at": "2026-10-25T09:00:00Z"
+    }
+  },
+  {
+    "model": "locations.location",
+    "pk": 9104,
+    "fields": {
+      "name": "Manual Empty Gallery",
+      "description": "An active location without reviews or recent views.",
+      "categories": [
+        7
+      ],
+      "address": "3 Quiet Square, Kyiv",
+      "latitude": "50.454000",
+      "longitude": "30.519000",
+      "created_by": 9002,
+      "created_at": "2026-10-04T09:00:00Z",
+      "updated_at": "2026-10-04T09:00:00Z",
+      "deleted_at": null
+    }
+  },
+  {
+    "model": "reviews.review",
+    "pk": 9201,
+    "fields": {
+      "location": 9101,
+      "author": 9003,
+      "rating": 5,
+      "comment": "Excellent coffee and river view.",
+      "created_at": "2026-10-10T10:00:00Z",
+      "updated_at": "2026-10-10T10:00:00Z",
+      "deleted_at": null
+    }
+  },
+  {
+    "model": "reviews.review",
+    "pk": 9202,
+    "fields": {
+      "location": 9101,
+      "author": 9004,
+      "rating": 4,
+      "comment": "Nice place, a bit busy on weekends.",
+      "created_at": "2026-10-11T10:00:00Z",
+      "updated_at": "2026-10-11T10:00:00Z",
+      "deleted_at": null
+    }
+  },
+  {
+    "model": "reviews.review",
+    "pk": 9203,
+    "fields": {
+      "location": 9101,
+      "author": 9002,
+      "rating": 5,
+      "comment": "Owner's favorite spot.",
+      "created_at": "2026-10-12T10:00:00Z",
+      "updated_at": "2026-10-12T10:00:00Z",
+      "deleted_at": null
+    }
+  },
+  {
+    "model": "reviews.review",
+    "pk": 9204,
+    "fields": {
+      "location": 9102,
+      "author": 9003,
+      "rating": 4,
+      "comment": "Good for a walk.",
+      "created_at": "2026-10-13T10:00:00Z",
+      "updated_at": "2026-10-13T10:00:00Z",
+      "deleted_at": null
+    }
+  },
+  {
+    "model": "reviews.review",
+    "pk": 9205,
+    "fields": {
+      "location": 9102,
+      "author": 9002,
+      "rating": 3,
+      "comment": "A bit crowded on weekends.",
+      "created_at": "2026-10-14T10:00:00Z",
+      "updated_at": "2026-10-14T10:00:00Z",
+      "deleted_at": null
+    }
+  },
+  {
+    "model": "reviews.review",
+    "pk": 9206,
+    "fields": {
+      "location": 9101,
+      "author": 9006,
+      "rating": 2,
+      "comment": "Historic review kept for audit.",
+      "created_at": "2026-10-15T10:00:00Z",
+      "updated_at": "2026-10-24T10:00:00Z",
+      "deleted_at": "2026-10-24T10:00:00Z"
+    }
+  },
+  {
+    "model": "reviews.reviewreaction",
+    "pk": 9301,
+    "fields": {
+      "review": 9201,
+      "user": 9004,
+      "type": "like",
+      "created_at": "2026-10-16T10:00:00Z",
+      "updated_at": "2026-10-16T10:00:00Z"
+    }
+  },
+  {
+    "model": "reviews.reviewreaction",
+    "pk": 9302,
+    "fields": {
+      "review": 9201,
+      "user": 9002,
+      "type": "like",
+      "created_at": "2026-10-16T11:00:00Z",
+      "updated_at": "2026-10-16T11:00:00Z"
+    }
+  },
+  {
+    "model": "reviews.reviewreaction",
+    "pk": 9303,
+    "fields": {
+      "review": 9202,
+      "user": 9003,
+      "type": "dislike",
+      "created_at": "2026-10-17T10:00:00Z",
+      "updated_at": "2026-10-17T10:00:00Z"
+    }
+  },
+  {
+    "model": "reviews.reviewreaction",
+    "pk": 9304,
+    "fields": {
+      "review": 9204,
+      "user": 9002,
+      "type": "like",
+      "created_at": "2026-10-17T11:00:00Z",
+      "updated_at": "2026-10-17T11:00:00Z"
+    }
+  },
+  {
+    "model": "subscriptions.locationsubscription",
+    "pk": 9401,
+    "fields": {
+      "location": 9101,
+      "user": 9004,
+      "is_active": true,
+      "created_at": "2026-10-05T09:00:00Z",
+      "updated_at": "2026-10-05T09:00:00Z",
+      "unsubscribed_at": null
+    }
+  },
+  {
+    "model": "subscriptions.locationsubscription",
+    "pk": 9402,
+    "fields": {
+      "location": 9101,
+      "user": 9003,
+      "is_active": true,
+      "created_at": "2026-10-06T09:00:00Z",
+      "updated_at": "2026-10-06T09:00:00Z",
+      "unsubscribed_at": null
+    }
+  },
+  {
+    "model": "subscriptions.locationsubscription",
+    "pk": 9403,
+    "fields": {
+      "location": 9102,
+      "user": 9004,
+      "is_active": false,
+      "created_at": "2026-10-07T09:00:00Z",
+      "updated_at": "2026-10-20T09:00:00Z",
+      "unsubscribed_at": "2026-10-20T09:00:00Z"
+    }
+  },
+  {
+    "model": "subscriptions.locationsubscription",
+    "pk": 9404,
+    "fields": {
+      "location": 9103,
+      "user": 9004,
+      "is_active": true,
+      "created_at": "2026-10-08T09:00:00Z",
+      "updated_at": "2026-10-08T09:00:00Z",
+      "unsubscribed_at": null
+    }
+  },
+  {
+    "model": "locations.locationview",
+    "pk": 9501,
+    "fields": {
+      "location": 9101,
+      "identity_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "viewed_at": "2026-09-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "locations.locationview",
+    "pk": 9502,
+    "fields": {
+      "location": 9101,
+      "identity_hash": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "viewed_at": "2026-09-15T12:00:00Z"
+    }
+  },
+  {
+    "model": "locations.locationview",
+    "pk": 9503,
+    "fields": {
+      "location": 9103,
+      "identity_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "viewed_at": "2026-09-20T12:00:00Z"
+    }
+  }
+]
